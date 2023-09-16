@@ -227,14 +227,14 @@ class BaseIRAnalysis:
         if not plot_stderr:
             stderr = None
 
-        fig = plotting.irf_grid_plot(cum_effects, stderr, impulse, response,
+        fig, axes = plotting.irf_grid_plot(cum_effects, stderr, impulse, response,
                                      self.model.names, title, signif=signif,
                                      hlines=lr_effects,
                                      subplot_params=subplot_params,
                                      plot_params=plot_params,
                                      figsize=figsize,
                                      stderr_type=stderr_type)
-        return fig
+        return fig, axes
 
 
 class IRAnalysis(BaseIRAnalysis):
