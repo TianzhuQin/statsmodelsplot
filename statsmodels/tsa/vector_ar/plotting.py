@@ -105,7 +105,7 @@ def plot_with_error(y, error, x=None, axes=None, value_fmt='k',
         axes = plt.gca()
 
     x = x if x is not None else lrange(len(y))
-    plot_action = lambda y, fmt: axes.plot(x, y, fmt)
+    plot_action = lambda y, fmt: axes.plot(x, y, fmt, color="black")
     plot_action(y, value_fmt)
 
     #changed this
