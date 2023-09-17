@@ -260,12 +260,12 @@ def irf_grid_plot_axes(values, stderr, impcol, rescol, names, title,
     
     nrows, ncols, to_plot = _get_irf_plot_config(names, impcol, rescol)
 
-    if axes is None:
-        if subplot_params is None:
-            subplot_params = {}
-        if plot_params is None:
-            plot_params = {}
+    if subplot_params is None:
+        subplot_params = {}
+    if plot_params is None:
+        plot_params = {}
 
+    if axes is None:
         fig, axes = plt.subplots(nrows=nrows, ncols=ncols, sharex=True,
                                 squeeze=False, figsize=figsize)
 
