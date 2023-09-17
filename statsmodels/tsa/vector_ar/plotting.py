@@ -307,8 +307,6 @@ def irf_grid_plot_axes(values, stderr, impcol, rescol, names, title,
     else:
         adjust_subplots()
 
-        fig.suptitle(title, fontsize=14)
-
         subtitle_temp = r'%s$\rightarrow$%s'
 
         k = len(names)
