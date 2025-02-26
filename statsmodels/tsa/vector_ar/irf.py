@@ -239,7 +239,8 @@ class BaseIRAnalysis:
     def plot_cum_effects_axes(self, orth=False, *, impulse=None, response=None,
                          signif=0.05, plot_params=None, figsize=(10, 10),
                          subplot_params=None, plot_stderr=True,
-                         stderr_type='asym', repl=1000, seed=None, axes=None):
+                         stderr_type='asym', repl=1000, seed=None, 
+                         axes=None, linewidth=None, marker=None, shade_alpha=0, shade_hatch=None, shade_layer=1):
         """
         Plot cumulative impulse response functions
 
@@ -291,15 +292,16 @@ class BaseIRAnalysis:
         if not plot_stderr:
             stderr = None
 
-        axes = plotting.irf_grid_plot_axes(cum_effects, stderr, impulse, response,
-                                     self.model.names, title, signif=signif,
-                                     hlines=lr_effects,
-                                     subplot_params=subplot_params,
-                                     plot_params=plot_params,
-                                     figsize=figsize,
-                                     stderr_type=stderr_type,
-                                     axes=axes)
-        return axes
+        axes, y1, y2, y3 = plotting.irf_grid_plot_axes(cum_effects, stderr, impulse, response,
+                                                        self.model.names, title, signif=signif,
+                                                        hlines=lr_effects,
+                                                        subplot_params=subplot_params,
+                                                        plot_params=plot_params,
+                                                        figsize=figsize,
+                                                        stderr_type=stderr_type,
+                                                        axes=axes, marker=marker, linewidth=linewidth, 
+                                                        shade_alpha=shade_alpha, shade_hatch=shade_hatch, shade_layer=shade_layer)
+        return axes, y1, y2, y3
 
 class IRAnalysis(BaseIRAnalysis):
     """

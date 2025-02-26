@@ -90,7 +90,7 @@ def plot_var_forc(prior, forc, err_upper, err_lower,
 
 
 def plot_with_error(y, error, x=None, axes=None, value_fmt='k',
-                    error_fmt='k--', alpha=0.05, stderr_type = 'asym'):
+                    error_fmt='k--', alpha=0.05, stderr_type = 'asym', linewidth=None, marker=None, shade_alpha=0, shade_hatch=None, shade_layer=1):
     """
     Make plot with optional error bars
 
@@ -105,20 +105,34 @@ def plot_with_error(y, error, x=None, axes=None, value_fmt='k',
         axes = plt.gca()
 
     x = x if x is not None else lrange(len(y))
-    plot_action = lambda y, fmt: axes.plot(x, y, fmt, color="black")
-    plot_action(y, value_fmt)
+    plot_action = lambda y, fmt, linewidth, markersize: axes.plot(x, y, fmt, marker=marker, color="black", linewidth=linewidth, markersize=markersize)
+    plot_action(y, value_fmt, linewidth, 10)
+    q = util.norm_signif_level(alpha)
 
-    #changed this
-    if error is not None:
-        if stderr_type == 'asym':
-            q = util.norm_signif_level(alpha)
-            plot_action(y - q * error, error_fmt)
-            plot_action(y + q * error, error_fmt)
-        if stderr_type in ('mc','sz1','sz2','sz3'):
-            plot_action(error[0], error_fmt)
-            plot_action(error[1], error_fmt)
+    y1 = y - q * error
+    y2 = y
+    y3 = y + q * error
+    
+    for i in range(shade_layer):
+        alpha1 = (i + 1) / shade_layer * shade_alpha
+        alpha2 = (shade_layer - i) / shade_layer * shade_alpha
+        axes.fill_between(x, y1 + (y2-y1) * i / shade_layer, y1 + (y2-y1) * (i+1) / shade_layer, color='dimgrey', alpha=alpha1, hatch=shade_hatch)
+        axes.fill_between(x, y2 + (y3-y2) * i / shade_layer, y2 + (y3-y2) * (i+1) / shade_layer, color='dimgrey', alpha=alpha2, hatch=shade_hatch)
 
+    # axes.fill_between(x, y - q * error,y + q * error, color='dimgrey', alpha=shade_alpha, hatch=shade_hatch)
 
+    # #changed this
+    # if error is not None:
+    #     if stderr_type == 'asym':
+    #         q = util.norm_signif_level(alpha)
+    #         plot_action(y - q * error, error_fmt, 0.5, 5)
+    #         plot_action(y + q * error, error_fmt, 0.5, 5)
+    #     if stderr_type in ('mc','sz1','sz2','sz3'):
+    #         plot_action(error[0], error_fmt, 0.5, 5)
+    #         plot_action(error[1], error_fmt, 0.5, 5)
+
+    return y1, y2, y3
+    
 def plot_full_acorr(acorr, fontsize=8, linewidth=8, xlabel=None,
                     err_bound=None):
     """
@@ -247,7 +261,8 @@ def irf_grid_plot(values, stderr, impcol, rescol, names, title,
 
 def irf_grid_plot_axes(values, stderr, impcol, rescol, names, title,
                   signif=0.05, hlines=None, subplot_params=None,
-                  plot_params=None, figsize=(10,10), stderr_type='asym', axes=None):
+                  plot_params=None, figsize=(10,10), stderr_type='asym', 
+                  axes=None, linewidth=None, marker=None, shade_alpha=None, shade_hatch=None, shade_layer=None):
     """
     Reusable function to make flexible grid plots of impulse responses and
     comulative effects
@@ -286,20 +301,20 @@ def irf_grid_plot_axes(values, stderr, impcol, rescol, names, title,
             if stderr is not None:
                 if stderr_type == 'asym':
                     sig = np.sqrt(stderr[:, j * k + i, j * k + i])
-                    plot_with_error(values[:, i, j], sig, x=rng, axes=ax,
-                                    alpha=signif, value_fmt='b', stderr_type=stderr_type)
+                    y1, y2, y3 = plot_with_error(values[:, i, j], sig, x=rng, axes=ax,
+                                                 alpha=signif, value_fmt='b', stderr_type=stderr_type)
                 if stderr_type in ('mc','sz1','sz2','sz3'):
                     errs = stderr[0][:, i, j], stderr[1][:, i, j]
-                    plot_with_error(values[:, i, j], errs, x=rng, axes=ax,
-                                    alpha=signif, value_fmt='b', stderr_type=stderr_type)
+                    y1, y2, y3 = plot_with_error(values[:, i, j], errs, x=rng, axes=ax,
+                                                 alpha=signif, value_fmt='b', stderr_type=stderr_type)
             else:
-                plot_with_error(values[:, i, j], None, x=rng, axes=ax,
-                                value_fmt='b')
+                y1, y2, y3 = plot_with_error(values[:, i, j], None, x=rng, axes=ax,
+                                             value_fmt='b')
 
-            ax.axhline(0, color='k')
+            ax.axhline(0, color='k', linestyle='dashed', linewidth=0.5)
 
             if hlines is not None:
-                ax.axhline(hlines[i,j], color='k')
+                ax.axhline(hlines[i,j], color='k', linestyle='dashed', linewidth=0.5)
 
             sz = subplot_params.get('fontsize', 12)
             ax.set_title(subtitle_temp % (names[j], names[i]), fontsize=sz)
@@ -319,25 +334,28 @@ def irf_grid_plot_axes(values, stderr, impcol, rescol, names, title,
             if stderr is not None:
                 if stderr_type == 'asym':
                     sig = np.sqrt(stderr[:, j * k + i, j * k + i])
-                    plot_with_error(values[:, i, j], sig, x=rng, axes=ax,
-                                    alpha=signif, value_fmt='b', stderr_type=stderr_type)
+                    y1, y2, y3 = plot_with_error(values[:, i, j], sig, x=rng, axes=ax,
+                                                alpha=signif, value_fmt='b', stderr_type=stderr_type, 
+                                                linewidth=linewidth, marker=marker, shade_alpha=shade_alpha, shade_hatch=shade_hatch, shade_layer=shade_layer)
                 if stderr_type in ('mc','sz1','sz2','sz3'):
                     errs = stderr[0][:, i, j], stderr[1][:, i, j]
-                    plot_with_error(values[:, i, j], errs, x=rng, axes=ax,
-                                    alpha=signif, value_fmt='b', stderr_type=stderr_type)
+                    y1, y2, y3 = plot_with_error(values[:, i, j], errs, x=rng, axes=ax,
+                                                alpha=signif, value_fmt='b', stderr_type=stderr_type, 
+                                                linewidth=linewidth, marker=marker, shade_alpha=shade_alpha, shade_hatch=shade_hatch, shade_layer=shade_layer)
             else:
-                plot_with_error(values[:, i, j], None, x=rng, axes=ax,
-                                value_fmt='b')
+                y1, y2, y3 = plot_with_error(values[:, i, j], None, x=rng, axes=ax,
+                                            value_fmt='b', 
+                                            linewidth=linewidth, marker=marker, shade_alpha=shade_alpha, shade_hatch=shade_hatch, shade_layer=shade_layer)
 
-            ax.axhline(0, color='k')
+            ax.axhline(0, color='k', linestyle='dashdot', linewidth=0.5)
 
-            if hlines is not None:
-                ax.axhline(hlines[i,j], color='k')
+#             if hlines is not None:
+#                 ax.axhline(hlines[i,j], color='k', linestyle='dashed', linewidth=0.5)
 
             sz = subplot_params.get('fontsize', 12)
             ax.set_title(subtitle_temp % (names[j], names[i]), fontsize=sz)
 
-    return axes
+    return axes, y1, y2, y3
 
 
 def _get_irf_plot_config(names, impcol, rescol):
